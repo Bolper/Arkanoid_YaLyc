@@ -29,5 +29,5 @@ class Paddle(pygame.sprite.Sprite):
         if keys[pygame.K_LEFT] and x > 0:
             self.rect.move_ip(-self.speed, 0)
 
-        if keys[pygame.K_RIGHT] and x < self.surface.get_width() - self.PADDLE_WIDTH - self.speed:
+        if keys[pygame.K_RIGHT] and x < self.surface.get_width() - self.rect.width - self.speed:
             self.rect.move_ip(self.speed, 0)

@@ -1,15 +1,18 @@
 import pygame
 
-
+from objects.block import Block
 from objects.load_game_image import load_image
+from objects.powerups.powerups import PowerupCatch
 
 
 class Ball(pygame.sprite.Sprite):
     def __init__(self, screen: pygame.surface.Surface, paddle: 'Paddle', blocks: list['Block']):
         super().__init__()
+        self.catching = False
+        self.is_catched = False
 
         self.paddle = paddle
-        self.blocks = blocks
+        self.enemies: list[pygame.sprite.Sprite] = blocks
 
         self.surface = screen
 
@@ -23,23 +26,65 @@ class Ball(pygame.sprite.Sprite):
         self.speed_x = 2
         self.speed_y = -2
 
+    def _collide_with_paddle(self, x):
+        self.speed_y *= -1
+        self.speed_x += (x - (self.paddle.rect.x + self.paddle.PADDLE_WIDTH / 2)) / 15
+        self.speed_x = max(min(self.speed_x, 5), -5)
+
+        if -1 < self.speed_x < 1:
+            try:
+                self.speed_x = self.speed_x + self.speed_x / abs(self.speed_x)
+
+            except ZeroDivisionError:
+                self.speed_x = 1
+
+        self.rect.y = self.surface.get_height() - self.paddle.PADDLE_HEIGHT - self.rect.width - 11
+
+        if self.catching:
+            self.is_catched = True
+
+    def _collide_with_block(self, block):
+        # Вычисление расстояний между центрами мяча и блока
+        ball_center_x = self.rect.centerx
+        ball_center_y = self.rect.centery
+
+        # Пределы блока
+        block_left = block.rect.left
+        block_right = block.rect.right
+        block_top = block.rect.top
+        block_bottom = block.rect.bottom
+
+        self.rect.move_ip(-self.speed_x, -self.speed_y)
+
+        if ball_center_x > block_right and ball_center_y > block_bottom:
+            self.speed_x = abs(self.speed_x)
+            self.speed_y = abs(self.speed_y)
+
+        elif ball_center_x > block_right and ball_center_y < block_top:
+            self.speed_x = abs(self.speed_x)
+            self.speed_y = -abs(self.speed_y)
+
+        elif ball_center_x < block_left and ball_center_y < block_top:
+            self.speed_x = -abs(self.speed_x)
+            self.speed_y = -abs(self.speed_y)
+
+        elif ball_center_x < block_left and ball_center_y > block_bottom:
+            self.speed_x = -abs(self.speed_x)
+            self.speed_y = abs(self.speed_y)
+
+        # Отскок по горизонтали
+        elif ball_center_x < block_left or ball_center_x > block_right:
+            self.speed_x = -self.speed_x
+
+        # Отскок по вертикали
+        elif ball_center_y < block_top or ball_center_y > block_bottom:
+            self.speed_y = -self.speed_y
+
     def _handle_collide(self):
         x, y = self.rect.x, self.rect.y
 
         if self.rect.colliderect(self.paddle.rect):
-
-            self.speed_y *= -1
-            self.speed_x += (x - (self.paddle.rect.x + self.paddle.PADDLE_WIDTH / 2)) / 15
-            self.speed_x = max(min(self.speed_x, 5), -5)
-
-            if -1 < self.speed_x < 1:
-                try:
-                    self.speed_x = self.speed_x + self.speed_x / abs(self.speed_x)
-
-                except ZeroDivisionError:
-                    self.speed_x = 1
-
-            self.rect.y = self.surface.get_height() - self.paddle.PADDLE_HEIGHT - self.rect.width - 11
+            self._collide_with_paddle(x)
 
         if x + self.rect.width >= self.surface.get_width():
             self.rect.move(self.surface.get_width() - self.rect.width, y)
@@ -54,56 +99,38 @@ class Ball(pygame.sprite.Sprite):
             self.speed_y = abs(self.speed_y)
 
         else:
-            for block in self.blocks:
-                if block.rect.colliderect(self.rect):
+            for sprite in self.enemies:
+                if sprite.rect.colliderect(self.rect):
+                    if isinstance(sprite, Block):
+                        self._collide_with_block(sprite)
 
-                    if self.rect.colliderect(block.rect):
-                        # Вычисление расстояний между центрами мяча и блока
-                        ball_center_x = self.rect.centerx
-                        ball_center_y = self.rect.centery
-                        block_center_x = block.rect.centerx
-                        block_center_y = block.rect.centery
+                        powerup = sprite.destroy()
+                        self.enemies.remove(sprite)
 
-                        # Пределы блока
-                        block_left = block.rect.left
-                        block_right = block.rect.right
-                        block_top = block.rect.top
-                        block_bottom = block.rect.bottom
+                        return powerup
 
-                        self.rect.move_ip(-self.speed_x, -self.speed_y)
-
-                        if ball_center_x > block_right and ball_center_y > block_bottom:
-                            self.speed_x = abs(self.speed_x)
-                            self.speed_y = abs(self.speed_y)
-
-                        elif ball_center_x > block_right and ball_center_y < block_top:
-                            self.speed_x = abs(self.speed_x)
-                            self.speed_y = -abs(self.speed_y)
-
-                        elif ball_center_x < block_left and ball_center_y < block_top:
-                            self.speed_x = -abs(self.speed_x)
-                            self.speed_y = -abs(self.speed_y)
-
-                        elif ball_center_x < block_left and ball_center_y > block_bottom:
-                            self.speed_x = -abs(self.speed_x)
-                            self.speed_y = abs(self.speed_y)
-
-                        # Отскок по горизонтали
-                        elif ball_center_x < block_left or ball_center_x > block_right:
-                            self.speed_x = -self.speed_x
-
-                        # Отскок по вертикали
-                        elif ball_center_y < block_top or ball_center_y > block_bottom:
-                            self.speed_y = -self.speed_y
-
-                    block.kill()
-                    self.blocks.remove(block)
 
     def update(self):
-        self._handle_collide()
+        if self.is_catched:
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_SPACE]:
+                self.is_catched = False
+
+            x, y, speed = self.paddle.rect.x, self.paddle.rect.y, self.paddle.speed
+
+            if keys[pygame.K_LEFT] and x > 0:
+                self.rect.move_ip(-speed, 0)
+
+            if keys[pygame.K_RIGHT] and x < self.surface.get_width() - self.paddle.rect.w - speed:
+                self.rect.move_ip(speed, 0)
+
+            return 
+
+        powerup = self._handle_collide()
         self.rect.move_ip(self.speed_x, self.speed_y)
 
-        return self
+        return powerup if powerup else None
+
 
     def reset(self):
         self.rect.x = self.paddle.rect.x + self.paddle.PADDLE_WIDTH // 2
@@ -111,3 +138,6 @@ class Ball(pygame.sprite.Sprite):
 
         self.speed_x = 2
         self.speed_y = -2
+
+    def switch_catching(self):
+        self.catching = True

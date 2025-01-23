@@ -7,6 +7,8 @@ import pygame
 
 import sqlite3
 
+from objects.powerups.powerups import PowerupCatch
+
 
 class Game:
     BACKGROUND = pygame.Color('black')
@@ -42,12 +44,24 @@ class Game:
 
         cursor.close()
 
+    def _handle_collide_with_powerups(self):
+        for sprite in self.all_sprites:
+            if isinstance(sprite, PowerupCatch) and self.paddle.rect.colliderect(sprite.rect):
+                self.ball.switch_catching()
+                sprite.kill()
+                self.all_sprites.remove(sprite)
+
     def _update_game(self) -> None:
+        self._handle_collide_with_powerups()
+
         self.screen.fill(self.BACKGROUND)
         self.all_sprites.draw(self.screen)
 
         for sprite in self.all_sprites:
-            sprite.update()
+            new_sprite: pygame.sprite.Sprite | None = sprite.update()
+
+            if new_sprite:
+                self.all_sprites.add(new_sprite)
 
         if not self._blocks:
             self.win = True
