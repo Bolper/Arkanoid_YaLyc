@@ -7,7 +7,8 @@ import pygame
 
 import sqlite3
 
-from objects.powerups.powerups import PowerupCatch
+from objects.powerups._powerup import Powerup
+from objects.powerups.powerups import PowerupCatch, PowerupSlow, PowerupLife
 
 
 class Game:
@@ -46,10 +47,20 @@ class Game:
 
     def _handle_collide_with_powerups(self):
         for sprite in self.all_sprites:
-            if isinstance(sprite, PowerupCatch) and self.paddle.rect.colliderect(sprite.rect):
-                self.ball.switch_catching()
+            if self.paddle.rect.colliderect(sprite.rect) and isinstance(sprite, Powerup):
+                if isinstance(sprite, PowerupCatch):
+                    self.ball.switch_catching()
+                    self.all_sprites.remove(sprite)
+
+                if isinstance(sprite, PowerupSlow):
+                    self.ball.slow()
+
+                if isinstance(sprite, PowerupLife):
+                    self.lives += 1
+
                 sprite.kill()
-                self.all_sprites.remove(sprite)
+
+
 
     def _update_game(self) -> None:
         self._handle_collide_with_powerups()

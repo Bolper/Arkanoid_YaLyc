@@ -4,14 +4,14 @@ import pygame
 
 
 from objects.load_game_image import load_image
-from objects.powerups.powerups import PowerupCatch
+from objects.powerups.powerups import PowerupCatch, PowerupSlow, PowerupLife
 
 
 class Block(pygame.sprite.Sprite):
     def __init__(self, screen: pygame.surface.Surface, color: str, x: float, y: float):
         super().__init__()
 
-        self.chance_to_spawn_powerup = 20
+        self.chance_to_spawn_powerup = 25
 
         self.image = load_image(
             f'blocks/brick_{color}.png')
@@ -23,9 +23,11 @@ class Block(pygame.sprite.Sprite):
         self.screen = screen
 
     def destroy(self):
+        self.kill()
+
         if self.chance_to_spawn_powerup >= random.randrange(1, 101):
-            powerup = PowerupCatch(self.screen, self.rect.x, self.rect.y)
-            self.kill()
+            powerup_init_data = self.screen, self.rect.x, self.rect.y
+            powerup = random.choice([PowerupCatch, PowerupSlow, PowerupLife])(*powerup_init_data)
+
             return powerup
 
-        self.kill()
