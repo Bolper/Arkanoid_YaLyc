@@ -3,16 +3,17 @@ import pygame
 from objects.block import Block
 from objects.load_game_image import load_image
 from objects.powerups.powerups import PowerupCatch
+from objects.enemies import Enemy
 
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, screen: pygame.surface.Surface, paddle: 'Paddle', blocks: list['Block']):
+    def __init__(self, screen: pygame.surface.Surface, paddle: 'Paddle', enemies: list):
         super().__init__()
         self.catching = False
         self.is_catched = False
 
         self.paddle = paddle
-        self.enemies: list[pygame.sprite.Sprite] = blocks
+        self.enemies: list[pygame.sprite.Sprite] = enemies
 
         self.surface = screen
 
@@ -102,6 +103,13 @@ class Ball(pygame.sprite.Sprite):
             for sprite in self.enemies:
                 if sprite.rect.colliderect(self.rect):
                     if isinstance(sprite, Block):
+                        self._collide_with_block(sprite)
+
+                        powerup = sprite.destroy()
+                        self.enemies.remove(sprite)
+
+                        return powerup
+                    if isinstance(sprite, Enemy):
                         self._collide_with_block(sprite)
 
                         powerup = sprite.destroy()
