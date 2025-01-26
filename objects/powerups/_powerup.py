@@ -9,6 +9,7 @@ class Powerup(pygame.sprite.Sprite):
         self.screen = screen
 
         self.current_img = 1
+        self.name = name
 
         self.image = load_image(fr"powerups/{name}/{name}_1.png")
 
@@ -30,7 +31,7 @@ class Powerup(pygame.sprite.Sprite):
         else:
             self.current_circle += 1
 
-        self.image = load_image(f"powerups/powerup_catch/powerup_catch_{self.current_img}.png")
+        self.image = load_image(f"powerups/{self.name}/{self.name}_{self.current_img}.png")
 
     def update(self):
         self.update_img()

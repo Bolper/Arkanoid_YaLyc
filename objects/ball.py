@@ -7,6 +7,11 @@ from objects.enemies._enemy import Enemy
 
 
 class Ball(pygame.sprite.Sprite):
+    MAX_SPEED_X = 5
+    START_SPEED = 2
+
+    SLOWDOWN_POWERUP_VALUE = 1
+
     def __init__(self, screen: pygame.surface.Surface, paddle: 'Paddle', enemies: list):
         super().__init__()
         self.catching = False
@@ -24,13 +29,11 @@ class Ball(pygame.sprite.Sprite):
         self.rect.x = self.surface.get_width() // 2
         self.rect.y = self.surface.get_height() - self.paddle.PADDLE_HEIGHT - self.rect.width - 11
 
-        self.speed_x = 2
-        self.speed_y = -2
+        self.speed_x = self.START_SPEED
+        self.speed_y = -self.START_SPEED
 
-    def _collide_with_paddle(self, x):
-        self.speed_y *= -1
-        self.speed_x += (x - (self.paddle.rect.x + self.paddle.PADDLE_WIDTH / 2)) / 15
-        self.speed_x = max(min(self.speed_x, 5), -5)
+    def _configure_speed(self):
+        self.speed_x = max(min(self.speed_x, self.MAX_SPEED_X), -self.MAX_SPEED_X)
 
         if -1 < self.speed_x < 1:
             try:
@@ -39,10 +42,17 @@ class Ball(pygame.sprite.Sprite):
             except ZeroDivisionError:
                 self.speed_x = 1
 
+    def _collide_with_paddle(self, x):
+        self.speed_y *= -1
+        self.speed_x += (x - (self.paddle.rect.x + self.paddle.PADDLE_WIDTH / 2)) / 15
+
+        self._configure_speed()
+
         self.rect.y = self.surface.get_height() - self.paddle.PADDLE_HEIGHT - self.rect.width - 11
 
         if self.catching:
             self.is_catched = True
+            self.catching = False
 
     def _collide_with_block(self, block):
         # Вычисление расстояний между центрами мяча и блока
@@ -144,8 +154,12 @@ class Ball(pygame.sprite.Sprite):
         self.rect.x = self.paddle.rect.x + self.paddle.PADDLE_WIDTH // 2
         self.rect.y = self.surface.get_height() - self.paddle.PADDLE_HEIGHT - self.rect.width - 11
 
-        self.speed_x = 2
-        self.speed_y = -2
+        self.speed_x = self.START_SPEED
+        self.speed_y = -self.START_SPEED
 
     def switch_catching(self):
         self.catching = True
+
+    def slow(self):
+        self.speed_x = (abs(self.speed_x) - 1) * self.speed_x / (abs(self.speed_x))
+        self._configure_speed()
