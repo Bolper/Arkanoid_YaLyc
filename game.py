@@ -3,7 +3,7 @@ import sys
 from objects.ball import Ball
 from objects.block import Block
 from objects.paddle import Paddle
-from objects.enemies.enemies import EnemyPyramid
+from objects.enemies.enemies import EnemyPyramid, EnemyCone, EnemyCube, EnemyMolecule
 import pygame
 
 import sqlite3
@@ -44,9 +44,16 @@ class Game:
         blocks_data = cursor.execute(query).fetchall()
 
         for t, color, x, y in blocks_data:
-            if t == "e":
-                self._enemies.append(EnemyPyramid(screen, x, y))
-            else:
+            if t == "enemy":
+                if color == "pyramid":
+                    self._enemies.append(EnemyPyramid(screen, x, y))
+                elif color == "cone":
+                    self._enemies.append(EnemyCone(screen, x, y))
+                elif color == "molecule":
+                    self._enemies.append(EnemyMolecule(screen, x, y))
+                elif color == "cube":
+                    self._enemies.append(EnemyCube(screen, x, y))
+            elif t == "block":
                 self._enemies.append(Block(screen, color, x, y))
 
         cursor.close()

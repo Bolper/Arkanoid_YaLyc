@@ -22,6 +22,8 @@ class Enemy(pygame.sprite.Sprite):
         self.speed_y = speed_y
         self.screen = screen
         self.name = name
+        self.circle = 6
+        self.current_circle = 0
 
     def destroy(self):
         if self.chance_to_spawn_powerup >= random.randrange(1, 101):
@@ -43,7 +45,14 @@ class Enemy(pygame.sprite.Sprite):
         elif self.rect.y <= 0:
             self.rect.move(self.speed_x, 1)
             self.speed_y = abs(self.speed_y)
+        elif self.rect.y >= self.screen.get_height() - self.rect.height:
+            self.rect.move(self.speed_y, 1)
+            self.speed_y = -abs(self.speed_y)
 
     def update_img(self):
-        self.current_img = self.current_img + 1 if self.current_img < 25 else 1
-        self.image = load_image(f"enemies/enemy_{self.name}/enemy_{self.name}_{self.current_img}.png")
+        if self.current_circle == self.circle:
+            self.current_circle = 0
+            self.current_img = self.current_img + 1 if self.current_img < 25 else 1
+            self.image = load_image(f"enemies/enemy_{self.name}/enemy_{self.name}_{self.current_img}.png")
+        else:
+            self.current_circle += 1
