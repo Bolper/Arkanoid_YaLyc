@@ -22,7 +22,6 @@ class Powerup(pygame.sprite.Sprite):
         self.circle = 6
         self.current_circle = 0
 
-
     def update_img(self):
         if self.current_circle == self.circle:
             self.current_img = self.current_img + 1 if self.current_img < 8 else 1

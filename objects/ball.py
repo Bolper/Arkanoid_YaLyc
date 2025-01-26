@@ -3,7 +3,7 @@ import pygame
 from objects.block import Block
 from objects.load_game_image import load_image
 from objects.powerups.powerups import PowerupCatch
-from objects.enemies import Enemy
+from objects.enemies._enemy import Enemy
 
 
 class Ball(pygame.sprite.Sprite):
