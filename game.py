@@ -3,6 +3,7 @@ import sys
 from objects.ball import Ball
 from objects.block import Block
 from objects.paddle import Paddle
+from objects.enemies.enemies import EnemyPyramid, EnemyCone, EnemyCube, EnemyMolecule
 import pygame
 
 import sqlite3
@@ -23,25 +24,38 @@ class Game:
 
         self.win: bool = False
 
-        self._blocks: list[Block] = []
-        self._get_blocks(screen, f"levels/{level}")
+        self._enemies: list = []
+        self._get_enemies(screen, f"levels/{level}")
 
         self.paddle = Paddle(screen)
-        self.ball = Ball(screen, self.paddle, self._blocks)
+        self.ball = Ball(screen, self.paddle, self._enemies)
 
         self.all_sprites = pygame.sprite.Group()
 
-        for sprite in (self.ball, self.paddle, *self._blocks):
+        for sprite in (self.ball, self.paddle, *self._enemies):
             self.all_sprites.add(sprite)
 
-    def _get_blocks(self, screen: pygame.surface.Surface, db_name: str):
+    def get_total_score(self) -> int:
+        return self.total_score
+
+    def _get_enemies(self, screen: pygame.surface.Surface, db_name: str):
         conn = sqlite3.connect(db_name)
         cursor = conn.cursor()
         query = """SELECT * FROM blocks"""
         blocks_data = cursor.execute(query).fetchall()
 
-        for color, x, y in blocks_data:
-            self._blocks.append(Block(screen, color, x, y))
+        for t, color, x, y in blocks_data:
+            if t == "enemy":
+                if color == "pyramid":
+                    self._enemies.append(EnemyPyramid(screen, x, y))
+                elif color == "cone":
+                    self._enemies.append(EnemyCone(screen, x, y))
+                elif color == "molecule":
+                    self._enemies.append(EnemyMolecule(screen, x, y))
+                elif color == "cube":
+                    self._enemies.append(EnemyCube(screen, x, y))
+            elif t == "block":
+                self._enemies.append(Block(screen, color, x, y))
 
         cursor.close()
 
@@ -74,7 +88,7 @@ class Game:
             if new_sprite:
                 self.all_sprites.add(new_sprite)
 
-        if not self._blocks:
+        if not self._enemies:
             self.win = True
             self.game_over_flag = True
 

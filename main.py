@@ -41,7 +41,7 @@ def draw_start_screen(screen: pygame.surface.Surface) -> None:
         pygame.display.update()
 
 
-def draw_game_over_screen(screen: pygame.surface.Surface) -> None:
+def draw_game_over_screen(screen: pygame.surface.Surface, game: "Game") -> None:
     while True:
         font = pygame.font.Font(None, 36)
 
@@ -49,7 +49,7 @@ def draw_game_over_screen(screen: pygame.surface.Surface) -> None:
         end_text = font.render("Game Over!", True, COLOR)
         end_rect = end_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
         screen.blit(end_text, end_rect)
-        score_text = font.render(f"Final Score: ...", True, COLOR)
+        score_text = font.render(f"Final Score: {game.get_total_score()}", True, COLOR)
         score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
         screen.blit(score_text, score_rect)
 
@@ -79,7 +79,7 @@ def main():
         for level in levels:
             game = Game(screen, level, FPS)
             game.run()
-            draw_game_over_screen(screen)
+            draw_game_over_screen(screen, game)
 
             if not game.is_win:
                 break
