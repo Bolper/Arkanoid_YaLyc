@@ -9,7 +9,7 @@ import pygame
 import sqlite3
 
 from objects.powerups._powerup import Powerup
-from objects.powerups.powerups import PowerupCatch, PowerupSlow, PowerupLife
+from objects.powerups.powerups import PowerupCatch, PowerupSlow, PowerupLife, PowerupExpand
 
 
 class Game:
@@ -27,7 +27,7 @@ class Game:
         self._enemies: list = []
         self._get_enemies(screen, f"levels/{level}")
 
-        self.paddle = Paddle(screen)
+        self.paddle = Paddle(screen, self.FPS)
         self.ball = Ball(screen, self.paddle, self._enemies)
 
         self.all_sprites = pygame.sprite.Group()
@@ -71,6 +71,9 @@ class Game:
 
                 if isinstance(sprite, PowerupLife):
                     self.lives += 1
+
+                if isinstance(sprite, PowerupExpand):
+                    self.paddle.start_expand()
 
                 sprite.kill()
 
