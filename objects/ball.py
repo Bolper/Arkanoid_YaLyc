@@ -122,10 +122,10 @@ class Ball(pygame.sprite.Sprite):
                     if isinstance(sprite, Enemy):
                         self._collide_with_block(sprite)
 
-                        powerup = sprite.destroy()
-                        self.enemies.remove(sprite)
-
-                        return powerup
+                        if sprite.tryDestroy():
+                            powerup = sprite.destroy()
+                            self.enemies.remove(sprite)
+                            return powerup
 
 
     def update(self):
@@ -142,13 +142,12 @@ class Ball(pygame.sprite.Sprite):
             if keys[pygame.K_RIGHT] and x < self.surface.get_width() - self.paddle.rect.w - speed:
                 self.rect.move_ip(speed, 0)
 
-            return 
+            return
 
         powerup = self._handle_collide()
         self.rect.move_ip(self.speed_x, self.speed_y)
 
         return powerup if powerup else None
-
 
     def reset(self):
         self.rect.x = self.paddle.rect.x + self.paddle.PADDLE_WIDTH // 2
