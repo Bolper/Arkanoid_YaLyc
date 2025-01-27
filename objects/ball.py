@@ -159,6 +159,9 @@ class Ball(pygame.sprite.Sprite):
     def switch_catching(self):
         self.catching = True
 
+    def stop_catching(self):
+        self.is_catched = False
+
     def slow(self):
         self.speed_x = (abs(self.speed_x) - 1) * self.speed_x / (abs(self.speed_x))
         self._configure_speed()

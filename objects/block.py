@@ -2,16 +2,15 @@ import random
 
 import pygame
 
-
 from objects.load_game_image import load_image
-from objects.powerups.powerups import PowerupCatch, PowerupSlow, PowerupLife, PowerupExpand
+from objects.powerups.powerups import PowerupCatch, PowerupSlow, PowerupLife, PowerupExpand, PowerupLaser
 
 
 class Block(pygame.sprite.Sprite):
     def __init__(self, screen: pygame.surface.Surface, color: str, x: float, y: float):
         super().__init__()
 
-        self.chance_to_spawn_powerup = 251
+        self.chance_to_spawn_powerup = 25
 
         self.image = load_image(
             f'blocks/brick_{color}.png')
@@ -27,7 +26,7 @@ class Block(pygame.sprite.Sprite):
 
         if self.chance_to_spawn_powerup >= random.randrange(1, 101):
             powerup_init_data = self.screen, self.rect.x, self.rect.y
-            powerup = random.choice([PowerupCatch, PowerupSlow, PowerupLife, PowerupExpand])(*powerup_init_data)
+            powerup = random.choice([PowerupCatch, PowerupSlow, PowerupLife, PowerupExpand, PowerupLaser])(
+                *powerup_init_data)
 
             return powerup
-
