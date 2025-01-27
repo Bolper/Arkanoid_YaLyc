@@ -2,6 +2,8 @@ import sys
 
 from objects.ball import Ball
 from objects.block import Block
+from objects.enemies._enemy import Enemy
+from objects.laser import Laser
 from objects.paddle import Paddle
 from objects.enemies.enemies import EnemyPyramid, EnemyCone, EnemyCube, EnemyMolecule
 import pygame
@@ -9,7 +11,7 @@ import pygame
 import sqlite3
 
 from objects.powerups._powerup import Powerup
-from objects.powerups.powerups import PowerupCatch, PowerupSlow, PowerupLife
+from objects.powerups.powerups import PowerupCatch, PowerupSlow, PowerupLife, PowerupExpand, PowerupLaser
 
 
 class Game:
@@ -27,10 +29,11 @@ class Game:
         self._enemies: list = []
         self._get_enemies(screen, f"levels/{level}")
 
-        self.paddle = Paddle(screen)
+        self.paddle = Paddle(screen, self.FPS)
         self.ball = Ball(screen, self.paddle, self._enemies)
 
         self.all_sprites = pygame.sprite.Group()
+        self.lasers: list[Laser] = []
 
         for sprite in (self.ball, self.paddle, *self._enemies):
             self.all_sprites.add(sprite)
@@ -67,26 +70,55 @@ class Game:
                     self.all_sprites.remove(sprite)
 
                 if isinstance(sprite, PowerupSlow):
+                    self.ball.stop_catching()
                     self.ball.slow()
 
                 if isinstance(sprite, PowerupLife):
+                    self.ball.stop_catching()
                     self.lives += 1
+
+                if isinstance(sprite, PowerupExpand):
+                    self.ball.stop_catching()
+                    self.paddle.start_expand()
+
+                if isinstance(sprite, PowerupLaser):
+                    self.ball.stop_catching()
+                    self.paddle.start_laser()
 
                 sprite.kill()
 
+    def _handle_collide_with_lasers(self):
+        for laser in self.lasers:
+            for sprite in self._enemies:
+                if laser.rect.colliderect(sprite.rect):
+                    if isinstance(sprite, Block):
+                        sprite.destroy()
+                        self._enemies.remove(sprite)
+
+                    elif isinstance(sprite, Enemy):
+                        if sprite.tryDestroy():
+                            sprite.destroy()
+                            self._enemies.remove(sprite)
+
+                    laser.kill()
 
 
     def _update_game(self) -> None:
         self._handle_collide_with_powerups()
+        self._handle_collide_with_lasers()
 
         self.screen.fill(self.BACKGROUND)
         self.all_sprites.draw(self.screen)
 
         for sprite in self.all_sprites:
-            new_sprite: pygame.sprite.Sprite | None = sprite.update()
+            new_sprite: pygame.sprite.Sprite | None | tuple = sprite.update()
 
             if new_sprite:
                 self.all_sprites.add(new_sprite)
+
+            if type(new_sprite) is tuple:
+                for laser in new_sprite:
+                    self.lasers.append(laser)
 
         if not self._enemies:
             self.win = True

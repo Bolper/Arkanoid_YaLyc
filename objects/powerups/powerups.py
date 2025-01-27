@@ -16,3 +16,13 @@ class PowerupSlow(Powerup):
 class PowerupLife(Powerup):
     def __init__(self, screen: pygame.surface.Surface, x: int | float, y: int | float):
         super().__init__(screen, x, y, "powerup_life")
+
+
+class PowerupExpand(Powerup):
+    def __init__(self, screen: pygame.surface.Surface, x: int | float, y: int | float):
+        super().__init__(screen, x, y, "powerup_expand")
+
+
+class PowerupLaser(Powerup):
+    def __init__(self, screen: pygame.surface.Surface, x: int | float, y: int | float):
+        super().__init__(screen, x, y, "powerup_laser")
