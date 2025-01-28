@@ -122,7 +122,7 @@ class Ball(pygame.sprite.Sprite):
                     if isinstance(sprite, Enemy):
                         self._collide_with_block(sprite)
 
-                        if sprite.tryDestroy():
+                        if sprite.try_destroy():
                             powerup = sprite.destroy()
                             self.enemies.remove(sprite)
                             return powerup
