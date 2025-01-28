@@ -6,24 +6,6 @@ from objects.load_game_image import load_image
 from objects.powerups.powerups import PowerupCatch
 
 
-class EnemyFactory:
-    @staticmethod
-    def create(type_enemy: str, *args, **kwargs) -> 'Enemy':
-        from objects.enemies.enemies import EnemyPyramid, EnemyCone, EnemyCube, EnemyMolecule
-
-        match type_enemy:
-            case 'pyramid':
-                return EnemyPyramid(*args, **kwargs)
-            case 'cone':
-                return EnemyCone(*args, **kwargs)
-            case 'cube':
-                return EnemyCube(*args, **kwargs)
-            case 'molecule':
-                return EnemyMolecule(*args, **kwargs)
-
-        raise ValueError(f'Unknown enemy type: {type_enemy}')
-
-
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, screen: pygame.surface.Surface, x: float, y: float, name: str, speed_x: float = 2,
                  speed_y: float = 0, hp: int = 1):

@@ -19,8 +19,8 @@ def terminate() -> None:
 
 
 def get_levels() -> list[str]:
-    DIR = 'levels'
-    levels_list = [name for name in os.listdir(DIR)]
+    levels_dir: str = 'levels'
+    levels_list = [name for name in os.listdir(levels_dir)]
     return levels_list
 
 
@@ -87,9 +87,6 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-
-        # pygame.display.flip()
-        # clock.tick(FPS)
 
 
 if __name__ == '__main__':
