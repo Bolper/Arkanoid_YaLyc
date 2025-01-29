@@ -17,6 +17,7 @@ class Block(pygame.sprite.Sprite):
             f'blocks/brick_{color}.png')
 
         self.rect: pygame.rect.Rect = self.image.get_rect()
+
         self.rect.x = x
         self.rect.y = y
 

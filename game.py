@@ -45,7 +45,7 @@ class Game:
     def _get_enemies(self, screen: pygame.surface.Surface, db_name: str) -> None:
         conn = sqlite3.connect(db_name)
         cursor = conn.cursor()
-        query = """SELECT * FROM blocks"""
+        query = """SELECT * FROM enemies"""
         blocks_data = cursor.execute(query).fetchall()
 
         for t, color, x, y in blocks_data:

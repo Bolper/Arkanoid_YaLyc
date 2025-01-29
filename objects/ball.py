@@ -27,7 +27,7 @@ class Ball(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
 
-        self.rect.x = self.surface.get_width() // 2
+        self.rect.x = self.game.paddle.rect.x + self.game.paddle.rect.width // 2
         self.rect.y = self.surface.get_height() - self.paddle.PADDLE_HEIGHT - self.rect.width - 11
 
         self.speed_x = self.START_SPEED
