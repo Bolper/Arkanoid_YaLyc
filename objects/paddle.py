@@ -44,6 +44,7 @@ class Paddle(pygame.sprite.Sprite):
 
         self.default_transform_cnt = 1
         self.default_transform_circle = 60
+        self.is_killed: bool = False
 
     def _transform_to_default(self, name: str) -> bool:
         if self.default_transform_cnt == self.default_transform_circle:
@@ -144,6 +145,13 @@ class Paddle(pygame.sprite.Sprite):
 
         else:
             self.laser_ticks_cnt = 0
+
+    def destroy(self) -> None:
+        self.kill()
+        self.is_killed = True
+
+    def is_destroyed(self) -> bool:
+        return self.is_killed
 
     def update(self) -> tuple[Laser, Laser] | None:
         self._wide()

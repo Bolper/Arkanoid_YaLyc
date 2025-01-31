@@ -4,6 +4,7 @@ from objects.block import Block
 from objects.enemies.enemies import Enemy
 from objects.load_game_image import load_image
 from objects.paddle import Paddle
+from objects.doh import Doh
 
 
 class Ball(pygame.sprite.Sprite):
@@ -128,6 +129,11 @@ class Ball(pygame.sprite.Sprite):
                             powerup = sprite.destroy()
                             self.enemies.remove(sprite)
                             return powerup
+                    elif isinstance(sprite, Doh):
+                        self._collide_with_block(sprite)
+                        if sprite.try_destroy():
+                            sprite.destroy()
+                            self.enemies.remove(sprite)
 
     def update(self):
         if self.rect.y > self.surface.get_height():
