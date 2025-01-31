@@ -67,7 +67,6 @@ class Game:
         for sprite in self.all_sprites:
             if self.paddle.rect.colliderect(sprite.rect) and isinstance(sprite, Powerup):
                 sprite.apply(self)
-
                 sprite.kill()
                 self.all_sprites.remove(sprite)
 
@@ -91,6 +90,9 @@ class Game:
 
     def _collide_with_doh_bullet(self) -> None:
         for bullet in self.doh_bullets:
+            if bullet.is_destroyed():
+                self.doh_bullets.remove(bullet)
+                break
             if bullet.rect.colliderect(self.paddle.rect):
                 self.paddle.destroy()
                 bullet.kill()
