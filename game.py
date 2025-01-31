@@ -5,8 +5,10 @@ from objects.ball import Ball
 from objects.block import Block
 from objects.enemies.enemies import Enemy
 from objects.enemies.enemy_factory import EnemyFactory
+from objects.doh import Doh
 from objects.laser import Laser
 from objects.paddle import Paddle
+from objects.doh_bullet import DohBullet
 import pygame
 
 import sqlite3
@@ -35,6 +37,7 @@ class Game:
 
         self.all_sprites = pygame.sprite.Group()
         self.lasers: list[Laser] = []
+        self.doh_bullets: list[DohBullet] = []
 
         for sprite in (*self.balls, self.paddle, *self._enemies):
             self.all_sprites.add(sprite)
@@ -54,6 +57,8 @@ class Game:
 
             elif t == "block":
                 self._enemies.append(Block(screen, color, x, y))
+            elif t == "boss":
+                self._enemies.append(Doh(screen, x, y))
 
         cursor.close()
 
@@ -83,6 +88,12 @@ class Game:
 
                     laser.kill()
 
+    def _collide_with_doh_bullet(self) -> None:
+        for bullet in self.doh_bullets:
+            if bullet.rect.colliderect(self.paddle.rect):
+                self.paddle.destroy()
+                bullet.kill()
+
     def _reset_ball(self) -> None:
         ball = Ball(self.screen, self.paddle, self._enemies, self)
 
@@ -94,7 +105,7 @@ class Game:
     def _update_game(self) -> None:
         self._handle_collide_with_powerups()
         self._handle_collide_with_lasers()
-
+        self._collide_with_doh_bullet()
         self.screen.fill(self.BACKGROUND)
         self.all_sprites.draw(self.screen)
 
@@ -103,13 +114,19 @@ class Game:
 
             if new_sprite:
                 self.all_sprites.add(new_sprite)
+                if isinstance(new_sprite, DohBullet):
+                    self.doh_bullets.append(new_sprite)
 
             if type(new_sprite) is tuple:
-                for laser in new_sprite:
-                    self.lasers.append(laser)
+                for entity in new_sprite:
+                    if isinstance(entity, Laser):
+                        self.lasers.append(entity)
 
         if not self._enemies:
             self.win = True
+            self.game_over_flag = True
+
+        if self.paddle.is_destroyed():
             self.game_over_flag = True
 
         if not self.balls:
