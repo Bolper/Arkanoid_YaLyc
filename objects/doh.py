@@ -34,6 +34,7 @@ class Doh(pygame.sprite.Sprite):
     def update(self):
         if self.current_circle == self.circle:
             self.current_circle = 0
-            return DohBullet(self.screen, 75, 20, random.randint(-2, 2), random.randint(1, 2))
+            return DohBullet(self.screen, self.rect.x + self.rect.w // 2, self.rect.y + self.rect.h // 2,
+                             random.randint(-2, 2), random.randint(1, 2))
         else:
             self.current_circle += 1
