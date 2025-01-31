@@ -1,9 +1,9 @@
 import pygame
 
 from objects.block import Block
+from objects.enemies.enemies import Enemy
 from objects.load_game_image import load_image
-from objects.powerups.powerups import PowerupCatch
-from objects.enemies._enemy import Enemy
+from objects.paddle import Paddle
 
 
 class Ball(pygame.sprite.Sprite):
@@ -12,10 +12,11 @@ class Ball(pygame.sprite.Sprite):
 
     SLOWDOWN_POWERUP_VALUE = 1
 
-    def __init__(self, screen: pygame.surface.Surface, paddle: 'Paddle', enemies: list):
+    def __init__(self, screen: pygame.surface.Surface, paddle: 'Paddle', enemies: list, game: 'game.Game'):
         super().__init__()
         self.catching = False
         self.is_catched = False
+        self.game = game
 
         self.paddle = paddle
         self.enemies: list[pygame.sprite.Sprite] = enemies
@@ -26,7 +27,7 @@ class Ball(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
 
-        self.rect.x = self.surface.get_width() // 2
+        self.rect.x = self.game.paddle.rect.x + self.game.paddle.rect.width // 2
         self.rect.y = self.surface.get_height() - self.paddle.PADDLE_HEIGHT - self.rect.width - 11
 
         self.speed_x = self.START_SPEED
@@ -53,6 +54,7 @@ class Ball(pygame.sprite.Sprite):
         if self.catching:
             self.is_catched = True
             self.catching = False
+            self.game.stop_balls_catching()
 
     def _collide_with_block(self, block):
         # Вычисление расстояний между центрами мяча и блока
@@ -119,16 +121,19 @@ class Ball(pygame.sprite.Sprite):
                         self.enemies.remove(sprite)
 
                         return powerup
-                    if isinstance(sprite, Enemy):
+                    elif isinstance(sprite, Enemy):
                         self._collide_with_block(sprite)
 
-                        if sprite.tryDestroy():
+                        if sprite.try_destroy():
                             powerup = sprite.destroy()
                             self.enemies.remove(sprite)
                             return powerup
 
-
     def update(self):
+        if self.rect.y > self.surface.get_height():
+            self.kill()
+            self.game.balls.remove(self)
+
         if self.is_catched:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_SPACE]:
@@ -159,6 +164,15 @@ class Ball(pygame.sprite.Sprite):
     def switch_catching(self):
         self.catching = True
 
+    def stop_catching(self):
+        self.catching = False
+
     def slow(self):
         self.speed_x = (abs(self.speed_x) - 1) * self.speed_x / (abs(self.speed_x))
         self._configure_speed()
+
+    def set_speed(self, speed):
+        self.speed_x = speed
+
+    def get_speed(self) -> float | int:
+        return self.speed_x

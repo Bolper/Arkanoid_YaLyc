@@ -39,3 +39,6 @@ class Powerup(pygame.sprite.Sprite):
 
         if self.rect.y >= self.screen.get_height():
             self.kill()
+
+    def apply(self, game: 'game.Game') -> None:
+        ...

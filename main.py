@@ -19,8 +19,8 @@ def terminate() -> None:
 
 
 def get_levels() -> list[str]:
-    DIR = 'levels'
-    levels_list = [name for name in os.listdir(DIR)]
+    levels_dir: str = 'levels'
+    levels_list = [name for name in os.listdir(levels_dir)]
     return levels_list
 
 
@@ -53,7 +53,7 @@ def draw_game_over_screen(screen: pygame.surface.Surface, game: "Game") -> None:
         score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
         screen.blit(score_text, score_rect)
 
-        restart_text = font.render("Press R to return to menu", True, COLOR)
+        restart_text = font.render("Press R to continue", True, COLOR)
         restart_rect = restart_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100))
         screen.blit(restart_text, restart_rect)
 
@@ -87,9 +87,6 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-
-        # pygame.display.flip()
-        # clock.tick(FPS)
 
 
 if __name__ == '__main__':
