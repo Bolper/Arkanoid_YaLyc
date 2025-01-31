@@ -1,6 +1,7 @@
 import pygame
 
 from objects.load_game_image import load_image
+import game
 
 
 class DohBullet(pygame.sprite.Sprite):
@@ -14,6 +15,7 @@ class DohBullet(pygame.sprite.Sprite):
         self.speed_x = speed_x
         self.speed_y = speed_y
         self.screen = screen
+        self.destroyed = False
 
     def update(self):
         self.rect.move_ip(self.speed_x, self.speed_y)
@@ -28,4 +30,8 @@ class DohBullet(pygame.sprite.Sprite):
             self.rect.move(self.speed_x, 1)
             self.speed_y = abs(self.speed_y)
         elif self.rect.y >= self.screen.get_height() - self.rect.height:
+            self.destroyed = True
             self.kill()
+
+    def is_destroyed(self) -> bool:
+        return self.destroyed
