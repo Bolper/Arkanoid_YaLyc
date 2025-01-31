@@ -2,7 +2,8 @@ import sys
 from random import choice
 
 from objects.ball import Ball
-from objects.block import Block
+from objects.blocks.blocks import Block
+from objects.blocks.block_factory import BlockFactory
 from objects.enemies.enemies import Enemy
 from objects.enemies.enemy_factory import EnemyFactory
 from objects.doh import Doh
@@ -56,7 +57,7 @@ class Game:
                 self._enemies.append(EnemyFactory.create(color, screen, x, y))
 
             elif t == "block":
-                self._enemies.append(Block(screen, color, x, y))
+                self._enemies.append(BlockFactory.create(color, screen, x, y))
             elif t == "boss":
                 self._enemies.append(Doh(screen, x, y))
 

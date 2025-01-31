@@ -1,6 +1,6 @@
 import pygame
 
-from objects.block import Block
+from objects.blocks.blocks import Block
 from objects.enemies.enemies import Enemy
 from objects.load_game_image import load_image
 from objects.paddle import Paddle
@@ -117,11 +117,10 @@ class Ball(pygame.sprite.Sprite):
                 if sprite.rect.colliderect(self.rect):
                     if isinstance(sprite, Block):
                         self._collide_with_block(sprite)
-
-                        powerup = sprite.destroy()
-                        self.enemies.remove(sprite)
-
-                        return powerup
+                        if sprite.try_destroy():
+                            powerup = sprite.destroy()
+                            self.enemies.remove(sprite)
+                            return powerup
                     elif isinstance(sprite, Enemy):
                         self._collide_with_block(sprite)
 
