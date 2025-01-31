@@ -1,5 +1,4 @@
 import pygame
-from pygame import rect
 
 from objects.laser import Laser
 from objects.load_game_image import load_image
@@ -35,8 +34,8 @@ class Paddle(pygame.sprite.Sprite):
         self.laser_ticks_cnt = 0
 
         self.laser_interval = 2
-        self.max_lasers = 3
-        self.laser_ticks = fps * self.laser_interval * self.max_lasers
+        self.max_extra_lasers = 3
+        self.laser_ticks = fps * self.laser_interval * self.max_extra_lasers
 
         self.laser_circle = 60
         self.current_laser_cnt = 1

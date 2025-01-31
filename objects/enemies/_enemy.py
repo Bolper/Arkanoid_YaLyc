@@ -8,7 +8,7 @@ from objects.powerups.powerups import PowerupCatch
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, screen: pygame.surface.Surface, x: float, y: float, name: str, speed_x: float = 2,
-                 speed_y: float = 0, HP: int = 1):
+                 speed_y: float = 0, hp: int = 1):
         super().__init__()
         self.chance_to_spawn_powerup = 20
         self.current_img = 1
@@ -24,7 +24,7 @@ class Enemy(pygame.sprite.Sprite):
         self.name = name
         self.circle = 6
         self.current_circle = 0
-        self.HP = HP
+        self.HP = hp
         self.current_HP = self.HP
 
     def destroy(self):
@@ -35,7 +35,7 @@ class Enemy(pygame.sprite.Sprite):
 
         self.kill()
 
-    def tryDestroy(self):
+    def try_destroy(self):
         if self.current_HP <= 0:
             return True
         else:
@@ -45,6 +45,7 @@ class Enemy(pygame.sprite.Sprite):
     def update(self):
         self.update_img()
         self.rect.move_ip(self.speed_x, self.speed_y)
+
         if self.rect.x + self.rect.width >= self.screen.get_width():
             self.rect.move(self.screen.get_width() - self.rect.width, self.rect.y)
             self.speed_x = -abs(self.speed_x)

@@ -12,7 +12,7 @@ class Laser(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-        self.speed = 1
+        self.speed = 2
 
     def update(self):
         self.rect.move_ip(0, -self.speed)

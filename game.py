@@ -1,17 +1,17 @@
 import sys
+from random import choice
 
 from objects.ball import Ball
 from objects.block import Block
-from objects.enemies._enemy import Enemy
+from objects.enemies.enemies import Enemy
+from objects.enemies.enemy_factory import EnemyFactory
 from objects.laser import Laser
 from objects.paddle import Paddle
-from objects.enemies.enemies import EnemyPyramid, EnemyCone, EnemyCube, EnemyMolecule
 import pygame
 
 import sqlite3
 
-from objects.powerups._powerup import Powerup
-from objects.powerups.powerups import PowerupCatch, PowerupSlow, PowerupLife, PowerupExpand, PowerupLaser
+from objects.powerups.powerups import Powerup
 
 
 class Game:
@@ -23,6 +23,7 @@ class Game:
         self.lives: int = lives
         self.total_score: int = 0
         self.game_over_flag: bool = False
+        self._is_paddle_catching: bool = False
 
         self.win: bool = False
 
@@ -30,78 +31,65 @@ class Game:
         self._get_enemies(screen, f"levels/{level}")
 
         self.paddle = Paddle(screen, self.FPS)
-        self.ball = Ball(screen, self.paddle, self._enemies)
+        self.balls: list[Ball] = [Ball(screen, self.paddle, self._enemies, self)]
 
         self.all_sprites = pygame.sprite.Group()
         self.lasers: list[Laser] = []
 
-        for sprite in (self.ball, self.paddle, *self._enemies):
+        for sprite in (*self.balls, self.paddle, *self._enemies):
             self.all_sprites.add(sprite)
 
     def get_total_score(self) -> int:
         return self.total_score
 
-    def _get_enemies(self, screen: pygame.surface.Surface, db_name: str):
+    def _get_enemies(self, screen: pygame.surface.Surface, db_name: str) -> None:
         conn = sqlite3.connect(db_name)
         cursor = conn.cursor()
-        query = """SELECT * FROM blocks"""
+        query = """SELECT * FROM enemies"""
         blocks_data = cursor.execute(query).fetchall()
 
         for t, color, x, y in blocks_data:
             if t == "enemy":
-                if color == "pyramid":
-                    self._enemies.append(EnemyPyramid(screen, x, y))
-                elif color == "cone":
-                    self._enemies.append(EnemyCone(screen, x, y))
-                elif color == "molecule":
-                    self._enemies.append(EnemyMolecule(screen, x, y))
-                elif color == "cube":
-                    self._enemies.append(EnemyCube(screen, x, y))
+                self._enemies.append(EnemyFactory.create(color, screen, x, y))
+
             elif t == "block":
                 self._enemies.append(Block(screen, color, x, y))
 
         cursor.close()
 
-    def _handle_collide_with_powerups(self):
+    def _handle_collide_with_powerups(self) -> None:
         for sprite in self.all_sprites:
             if self.paddle.rect.colliderect(sprite.rect) and isinstance(sprite, Powerup):
-                if isinstance(sprite, PowerupCatch):
-                    self.ball.switch_catching()
-                    self.all_sprites.remove(sprite)
-
-                if isinstance(sprite, PowerupSlow):
-                    self.ball.stop_catching()
-                    self.ball.slow()
-
-                if isinstance(sprite, PowerupLife):
-                    self.ball.stop_catching()
-                    self.lives += 1
-
-                if isinstance(sprite, PowerupExpand):
-                    self.ball.stop_catching()
-                    self.paddle.start_expand()
-
-                if isinstance(sprite, PowerupLaser):
-                    self.ball.stop_catching()
-                    self.paddle.start_laser()
+                sprite.apply(self)
 
                 sprite.kill()
+                self.all_sprites.remove(sprite)
 
-    def _handle_collide_with_lasers(self):
+    def _handle_collide_with_lasers(self) -> None:
         for laser in self.lasers:
             for sprite in self._enemies:
                 if laser.rect.colliderect(sprite.rect):
                     if isinstance(sprite, Block):
-                        sprite.destroy()
+                        powerup = sprite.destroy()
                         self._enemies.remove(sprite)
 
+                        if powerup:
+                            self.all_sprites.add(powerup)
+
                     elif isinstance(sprite, Enemy):
-                        if sprite.tryDestroy():
+                        if sprite.try_destroy():
                             sprite.destroy()
                             self._enemies.remove(sprite)
 
                     laser.kill()
 
+    def _reset_ball(self) -> None:
+        ball = Ball(self.screen, self.paddle, self._enemies, self)
+
+        self.balls.append(ball)
+        self.all_sprites.add(ball)
+
+        ball.reset()
 
     def _update_game(self) -> None:
         self._handle_collide_with_powerups()
@@ -124,14 +112,28 @@ class Game:
             self.win = True
             self.game_over_flag = True
 
-        if self.ball.rect.y >= self.screen.get_height():
+        if not self.balls:
             self.lives -= 1
 
             if not self.lives:
                 self.game_over_flag = True
 
             else:
-                self.ball.reset()
+                self._reset_ball()
+
+    def spawn_extra_ball(self):
+        ball = Ball(self.screen, self.paddle, self._enemies, self)
+        ball.set_speed(self.balls[0].get_speed() * choice([1, -1]))
+
+        self.balls.append(ball)
+        self.all_sprites.add(ball)
+
+    def stop_balls_catching(self) -> None:
+        for ball in self.balls:
+            ball.stop_catching()
+
+    def start_ball_catching(self) -> None:
+        self._is_paddle_catching = True
 
     def run(self) -> None:
         clock = pygame.time.Clock()
