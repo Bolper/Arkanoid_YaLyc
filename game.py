@@ -89,7 +89,6 @@ class Game:
                     laser.kill()
 
     def _collide_with_doh_bullet(self) -> None:
-        print(self.doh_bullets)
         for bullet in self.doh_bullets:
             if bullet.rect.colliderect(self.paddle.rect):
                 self.paddle.destroy()
@@ -115,24 +114,25 @@ class Game:
 
             if new_sprite:
                 self.all_sprites.add(new_sprite)
+                if isinstance(new_sprite, DohBullet):
+                    self.doh_bullets.append(new_sprite)
 
             if type(new_sprite) is tuple:
                 for entity in new_sprite:
                     if isinstance(entity, Laser):
                         self.lasers.append(entity)
-                    elif isinstance(entity, DohBullet):
-                        self.doh_bullets.append(entity)
 
         if not self._enemies:
             self.win = True
+            self.game_over_flag = True
+
+        if self.paddle.is_destroyed():
             self.game_over_flag = True
 
         if not self.balls:
             self.lives -= 1
 
             if not self.lives:
-                self.game_over_flag = True
-            if self.paddle.is_destroyed():
                 self.game_over_flag = True
 
             else:
