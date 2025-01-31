@@ -8,20 +8,21 @@ from objects.powerups.powerups import PowerupCatch, PowerupSlow, PowerupLife, Po
 
 
 class Block(pygame.sprite.Sprite):
-    def __init__(self, screen: pygame.surface.Surface, color: str, x: float, y: float):
+    def __init__(self, screen: pygame.surface.Surface, color: str, x: float, y: float, hp: int = 0):
         super().__init__()
 
-        self.chance_to_spawn_powerup = 30
+        self.chance_to_spawn_powerup = 25
 
         self.image = load_image(
             f'blocks/brick_{color}.png')
 
-        self.rect: pygame.rect.Rect = self.image.get_rect()
-
+        self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
 
         self.screen = screen
+        self.HP = hp
+        self.current_HP = hp
 
     def destroy(self):
         self.kill()
@@ -33,3 +34,10 @@ class Block(pygame.sprite.Sprite):
                 *powerup_init_data)
 
             return powerup
+
+    def try_destroy(self):
+        if self.current_HP <= 0:
+            return True
+        else:
+            self.current_HP -= 1
+            return False
